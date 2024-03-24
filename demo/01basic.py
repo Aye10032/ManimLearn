@@ -51,3 +51,15 @@ class VectorArrow(Scene):
         text2 = Text('(2, 2)').next_to(dot2, RIGHT)
 
         self.add(number_plane, dot1, arrow, text1, text2)
+
+
+class GradientImageFromArray(Scene):
+    def construct(self):
+        n = 256
+        image_array = np.uint8([[i * 256 / n for i in range(0, n)] for _ in range(0, n)])
+        print(image_array.shape)
+
+        image = ImageMobject(image_array).scale(2)
+        image.background_rectangle = SurroundingRectangle(image, GREEN)
+
+        self.add(image, image.background_rectangle)
