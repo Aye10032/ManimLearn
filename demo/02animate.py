@@ -95,3 +95,27 @@ class MovingAngle(Scene):
         self.play(theta_tracker.animate.increment_value(140))
         self.play(tex.animate.set_color(RED), run_time=0.5)
         self.play(theta_tracker.animate.set_value(350))
+
+
+class MovingDots(Scene):
+    def construct(self):
+        d1, d2 = Dot(color=BLUE), Dot(color=GREEN)
+        dg = VGroup(d1, d2).arrange(RIGHT, buff=1)
+        l1 = Line(d1.get_center(), d2.get_center()).set_color(RED)
+
+        self.add(dg, l1)
+
+        x = ValueTracker(0)
+        y = ValueTracker(0)
+
+        d1.add_updater(lambda z: z.set_x(x.get_value()))
+        d2.add_updater(lambda z: z.set_y(y.get_value()))
+        l1.add_updater(lambda z: z.become(
+            Line(d1.get_center(), d2.get_center())
+        ))
+
+        self.play(x.animate.set_value(5))
+        self.play(y.animate.set_value(4))
+        self.play(x.animate.set_value(-3))
+        self.play(y.animate.set_value(0))
+        self.wait()
