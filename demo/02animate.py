@@ -47,3 +47,13 @@ class PointMovingOnShapes(Scene):
 
         self.play(Rotating(dot1, about_point=[2, 0, 0]), run_time=1.5)
         self.wait()
+
+
+class MovingAround(Scene):
+    def construct(self):
+        square = Square(color=BLUE, fill_opacity=1)
+
+        self.play(square.animate.shift(LEFT * 3))
+        self.play(square.animate.set_fill(ORANGE))
+        self.play(square.animate.scale(0.4))
+        self.play(square.animate.rotate(PI / 4))
