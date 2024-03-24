@@ -32,3 +32,18 @@ class BooleanOperations(Scene):
         self.play(d.animate.scale(0.25).next_to(u, LEFT, buff=0.8))
         different_text.next_to(d, UP)
         self.play(FadeIn(different_text))
+
+
+class PointMovingOnShapes(Scene):
+    def construct(self):
+        circle = Circle(radius=1, color=BLUE)
+        dot1 = Dot()
+        dot2 = dot1.copy().shift(RIGHT)
+        self.add(dot1)
+
+        self.play(GrowFromCenter(circle))
+        self.play(Transform(dot1, dot2))
+        self.play(MoveAlongPath(dot1, circle), run_time=2, rate_func=smooth)
+
+        self.play(Rotating(dot1, about_point=[2, 0, 0]), run_time=1.5)
+        self.wait()
