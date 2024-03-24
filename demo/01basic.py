@@ -37,3 +37,17 @@ class BraceAnnotation(Scene):
         b2_text = b2.get_tex(r'x-x_1')
 
         self.add(line, dot1, dot2, b1, b1_text, b2, b2_text)
+
+
+class VectorArrow(Scene):
+    def construct(self):
+        dot1 = Dot(ORIGIN)
+        dot2 = Dot(np.array([2, 2, 0]))
+        arrow = Arrow(dot1, dot2, buff=0)
+
+        number_plane = NumberPlane()
+
+        text1 = Text('(0, 0)').next_to(dot1, DOWN)
+        text2 = Text('(2, 2)').next_to(dot2, RIGHT)
+
+        self.add(number_plane, dot1, arrow, text1, text2)
