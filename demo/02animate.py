@@ -119,3 +119,14 @@ class MovingDots(Scene):
         self.play(x.animate.set_value(-3))
         self.play(y.animate.set_value(0))
         self.wait()
+
+
+class MovingGroupToDestination(Scene):
+    def construct(self):
+        dg = VGroup(Dot(LEFT), Dot(ORIGIN), Dot(RIGHT, color=RED), Dot(2 * RIGHT)).scale(1.4)
+        dest = Dot(np.array([4, 3, 0]), color=YELLOW)
+
+        self.add(dg, dest)
+
+        self.play(dg.animate.shift(dest.get_center() - dg[2].get_center()))
+        self.wait()
