@@ -145,3 +145,27 @@ class MovingFrameBox(Scene):
         self.wait()
         self.play(ReplacementTransform(frame_box1, frame_box2))
         self.wait()
+
+
+class RotationUpdater(Scene):
+    def construct(self):
+        def update_forth(mobj: Mobject, dt: float):
+            mobj.rotate_about_origin(dt)
+
+        def update_back(mobj: Mobject, dt):
+            mobj.rotate_about_origin(-dt)
+
+        line_reference = Line(ORIGIN, LEFT).set_color(WHITE)
+        line_moving = Line(ORIGIN, LEFT).set_color(YELLOW)
+
+        line_moving.add_updater(update_forth)
+
+        self.add(line_reference, line_moving)
+        self.wait(2)
+
+        line_moving.remove_updater(update_forth)
+        line_moving.add_updater(update_back)
+        self.wait(2)
+
+        line_moving.remove_updater(update_back)
+        self.wait()
