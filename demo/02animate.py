@@ -130,3 +130,18 @@ class MovingGroupToDestination(Scene):
 
         self.play(dg.animate.shift(dest.get_center() - dg[2].get_center()))
         self.wait()
+
+
+class MovingFrameBox(Scene):
+    def construct(self):
+        text = MathTex("\\frac{d}{dx}f(x)g(x)=", "f(x)\\frac{d}{dx}g(x)", "+", "g(x)\\frac{d}{dx}f(x)")
+
+        self.play(Write(text))
+
+        frame_box1 = SurroundingRectangle(text[1], buff=0.1)
+        frame_box2 = SurroundingRectangle(text[3], buff=0.1)
+
+        self.play(Create(frame_box1))
+        self.wait()
+        self.play(ReplacementTransform(frame_box1, frame_box2))
+        self.wait()
