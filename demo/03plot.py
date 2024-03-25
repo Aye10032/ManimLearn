@@ -32,3 +32,35 @@ class SinAndCosFunctionPlot(Scene):
 
         labels = VGroup(axe_label, sin_label, cos_label, vert_line, line_label)
         self.add(plot, labels)
+
+
+class ArgMinExample(Scene):
+    def construct(self):
+        axe = Axes(
+            x_range=[0, 10],
+            y_range=[0, 100, 10],
+            axis_config={"include_tip": False}
+        )
+        labels = axe.get_axis_labels(x_label='x', y_label='f(x)')
+
+        t = ValueTracker(0)
+
+        def func(x):
+            return 2 * (x - 5) ** 2
+
+        graph = axe.plot(func, color=MAROON)
+
+        p0 = np.array([axe.coords_to_point(t.get_value(), func(t.get_value()))])
+        dot = Dot(point=p0)
+
+        self.add(axe, labels, graph, dot)
+
+        def update_func(mobj: Mobject):
+            mobj.move_to(axe.c2p(t.get_value(), func(t.get_value())))
+
+        dot.add_updater(update_func)
+        x_space = np.linspace(*axe.x_range[:2], 200)
+        min_index = func(x_space).argmin()
+
+        self.play(t.animate.set_value(x_space[min_index]))
+        self.wait()
