@@ -64,3 +64,35 @@ class ArgMinExample(Scene):
 
         self.play(t.animate.set_value(x_space[min_index]))
         self.wait()
+
+
+class GraphArePlot(Scene):
+    def construct(self):
+        ax = Axes(
+            x_range=[0, 5],
+            y_range=[0, 6],
+            x_axis_config={'numbers_to_include': [2, 3]},
+            tips=True
+        )
+        labels = ax.get_axis_labels()
+
+        self.add(ax, labels)
+
+        def func1(_x):
+            return 4 * _x - _x ** 2
+
+        def func2(_x):
+            return 0.8 * _x ** 2 - 3 * _x + 4
+
+        curve1 = ax.plot(func1, x_range=np.array([0, 4]), color=BLUE_C)
+        curve2 = ax.plot(func2, x_range=np.array([0, 4]), color=GREEN_B)
+
+        line1 = ax.get_vertical_line(ax.input_to_graph_point(2, curve1), color=YELLOW)
+        line2 = ax.get_vertical_line(ax.i2gp(3, curve2), color=YELLOW)
+
+        self.add(curve1, curve2, line1, line2)
+
+        area1 = ax.get_riemann_rectangles(curve1, x_range=np.array([0.3, 0.6]), dx=0.03, color=BLUE, fill_opacity=0.5)
+        area2 = ax.get_area(curve2, (2, 3), bounded_graph=curve1, color=GRAY, opacity=0.5)
+
+        self.add(area1, area2)
