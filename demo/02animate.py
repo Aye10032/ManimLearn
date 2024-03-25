@@ -169,3 +169,25 @@ class RotationUpdater(Scene):
 
         line_moving.remove_updater(update_back)
         self.wait()
+
+
+class PointWithTrace(Scene):
+    def construct(self):
+        path = VMobject()
+        dot = Dot()
+        path.set_points_as_corners(np.array([dot.get_center(), dot.get_center()]))
+
+        def update_path(path: Mobject):
+            pre_path = path.copy()
+            pre_path.add_points_as_corners(np.array([dot.get_center()]))
+            path.become(pre_path)
+
+        path.add_updater(update_path)
+        self.add(path, dot)
+
+        self.play(Rotating(dot, radians=np.array(PI), about_point=RIGHT, run_time=2))
+        self.wait()
+
+        self.play(dot.animate.shift(UP))
+        self.play(dot.animate.shift(LEFT))
+        self.wait()
