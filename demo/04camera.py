@@ -128,3 +128,17 @@ class ThreeDLightSourcePosition(ThreeDScene):
         self.renderer.camera.light_source.move_to(3 * IN)
         self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
         self.add(ax, sphere)
+
+
+class ThreeDCameraRotation(ThreeDScene):
+    def construct(self):
+        ax = ThreeDAxes()
+        circle = Circle()
+        self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+        self.add(circle, ax)
+
+        self.begin_ambient_camera_rotation(rate=0.1)
+        self.wait()
+        self.stop_ambient_camera_rotation()
+        self.move_camera(phi=75 * DEGREES, theta=30 * DEGREES)
+        self.wait()
