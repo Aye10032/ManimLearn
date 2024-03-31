@@ -93,3 +93,14 @@ class MovingZoomedSceneAround(ZoomedScene):
         self.play(self.get_zoomed_display_pop_out_animation(), unfold_camera, rate_func=lambda t: smooth(1 - t))
         self.play(Uncreate(zoom_frame), FadeOut(camera_frame))
         self.wait()
+
+
+class FixedInFrameMObjectTest(ThreeDScene):
+    def construct(self):
+        ax = ThreeDAxes()
+        self.set_camera_orientation(phi=75 * DEGREES, theta=-45 * DEGREES)
+        text3d = Text("This is 3D Object")
+        self.add_fixed_in_frame_mobjects(text3d)
+        text3d.to_corner(UL)
+        self.add(ax)
+        self.wait()
