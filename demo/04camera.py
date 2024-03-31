@@ -154,3 +154,49 @@ class ThreeDCameraIllusionRotation(ThreeDScene):
         self.begin_3dillusion_camera_rotation(rate=2)
         self.wait()
         self.stop_3dillusion_camera_rotation()
+
+
+class ThreeDSurfacePlot(ThreeDScene):
+    def construct(self):
+        resolution_fa = 30
+        self.set_camera_orientation(phi=75 * DEGREES, theta=-30 * DEGREES)
+
+        mu = [0.0, 0.0]
+        sigma = ValueTracker(0.4)
+
+        def param_gauss(u, v):
+            x = u
+            y = v
+            sigma_val = sigma.get_value()
+
+            d = np.linalg.norm(np.array([x - mu[0], y - mu[0]]))
+            z = np.exp(-(d ** 2 / (2.0 * sigma_val ** 2)))
+
+            return np.array([x, y, z])
+
+        def gauss():
+            gauss_surface = Surface(
+                param_gauss,
+                resolution=(resolution_fa, resolution_fa),
+                v_range=[-2, 2],
+                u_range=[-2, 2]
+            )
+
+            gauss_surface.scale(2, about_point=ORIGIN)
+            gauss_surface.set_style(fill_opacity=1, stroke_color=GREEN)
+            gauss_surface.set_fill_by_checkerboard(ORANGE, BLUE, opacity=0.8)
+
+            return gauss_surface
+
+        ax = ThreeDAxes()
+        self.play(Write(ax))
+        init_surface = gauss()
+        self.play(Write(init_surface))
+        self.remove(init_surface)
+
+        gauss_plane = always_redraw(gauss)
+        self.add(gauss_plane)
+
+        self.play(sigma.animate.set_value(1), run_time=2)
+        self.wait()
+        self.play(sigma.animate.set_value(0.2), run_time=2)
