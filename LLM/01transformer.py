@@ -7,19 +7,32 @@ from manim import VGroup, Arrow
 
 class Word2Vec(Scene):
     def construct(self):
+        title = Title("Step1. Word to vector", color=YELLOW)
+        self.play(FadeIn(title))
+        self.wait(2)
+        self.play(Unwrite(title))
+
+        commentary1 = Text("Here is a sentence.", color=YELLOW, font_size=35).to_edge(UL, buff=0.5)
+        self.play(Create(commentary1))
+        self.wait(0.5)
+
         sentence_origin = Text("Tim like kitchen")
         self.play(Write(sentence_origin))
+
+        commentary2 = Tex(
+            r"...first,\\ we use word embeddings to transform them into a set of vectors",
+            color=YELLOW, font_size=35).to_edge(DL, buff=0.5)
+        self.play(Create(commentary2))
+        self.wait(2)
+        self.play(FadeOut(commentary1, commentary2))
 
         sentence = Text("Tim like kitchen", font_size=30).move_to(3 * UP + RIGHT * 2)
         self.play(Transform(sentence_origin, sentence))
 
-        word1 = Text("Tim ", font_size=30)
-        word2 = Text("like ", font_size=30).next_to(word1, RIGHT)
-        word3 = Text("kitchen", font_size=30).next_to(word2, RIGHT)
+        word1 = Text("Tim ", font_size=30, color=BLUE)
+        word2 = Text("like ", font_size=30, color=BLUE).next_to(word1, RIGHT)
+        word3 = Text("kitchen", font_size=30, color=BLUE).next_to(word2, RIGHT)
         sentence_word = VGroup(word1, word2, word3).move_to(sentence)
-
-        plane = ComplexPlane()
-        # self.add(plane)
 
         embedding_block = RoundedRectangle(
             corner_radius=0.2, width=4, height=1.5, color=GREEN).move_to(RIGHT * 2 + UP * 0.2)
@@ -56,11 +69,17 @@ class Word2Vec(Scene):
         self.play(FadeOut(embedding_block, embedding_block_text, arrow_1, arrow_2, arrow_3))
         self.wait()
 
-        question = Text("How to represent position information?", color=YELLOW)
+        question = Tex(
+            r"...now we are faced with a new problem:\\ How to represent position information?",
+            color=YELLOW,
+            font_size=38
+        )
         self.play(Write(question))
         self.wait(2)
-        self.play(Unwrite(question))
+        self.play(FadeOut(question))
         self.wait()
+
+        commentary1 = Text("We use this formula to calculate the position encoding", color=YELLOW, font_size=35)
 
         position_tex = MathTex(r"""
         &\vec{p}_t^{(i)}=f(t)^{(i)}:=
@@ -70,13 +89,17 @@ class Word2Vec(Scene):
         \\
         \\
         &\text{where}\ \omega_k=\frac{1}{10000^{2k/d}}
-        """, font_size=30)
+        """, font_size=30).next_to(commentary1, DOWN)
+
+        VGroup(commentary1, position_tex).move_to(ORIGIN)
+        self.play(Create(commentary1))
         self.play(Write(position_tex))
         self.wait(2)
 
         position_encoding_block = embedding_block.copy()
         position_encoding_block_text = Tex(r"Position\\ Encoding", font_size=35).move_to(position_encoding_block)
 
+        self.play(FadeOut(commentary1))
         self.play(Transform(position_tex, position_encoding_block))
         self.play(FadeIn(position_encoding_block_text))
         self.wait(0.5)
@@ -136,6 +159,11 @@ class Word2Vec(Scene):
         self.play(FadeOut(sentence_origin, position_tex, position_encoding_block_text))
         self.wait(0.5)
 
+        commentary1 = Text("then we just need to add them together", color=YELLOW, font_size=32).move_to(RIGHT)
+        self.play(Write(commentary1))
+        self.wait()
+        self.play(FadeOut(commentary1))
+
         tex1_plus = MathTex("+").next_to(a1, RIGHT, buff=0.8)
         tex2_plus = MathTex("+").next_to(a2, RIGHT, buff=0.8)
         tex3_plus = MathTex("+").next_to(a3, RIGHT, buff=0.8)
@@ -153,7 +181,6 @@ class Word2Vec(Scene):
             Write(tex2_eq),
             Write(tex3_eq),
         )
-        self.wait()
 
         q1_rect = Rectangle(
             width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=BLUE
@@ -180,12 +207,23 @@ class Word2Vec(Scene):
         )
         self.wait()
 
-        self.play(Write(
-            MathTex(
-                r"&\text{...and here,}\\ &\text{we get the input vector }q^i",
-                tex_to_color_map={r"q^i": BLUE}
-            ).move_to(RIGHT * 3)
-        ))
+        commentary1 = MathTex(
+            r"&\text{...and here,}\\ &\text{we get the input vector }q^i",
+            tex_to_color_map={r"q^i": BLUE}
+        ).move_to(RIGHT * 3)
+        self.play(Write(commentary1))
+
+        self.wait(2)
+
+        self.play(
+            FadeOut(a1, a2, a3),
+            FadeOut(tex1_plus, tex2_plus, tex3_plus),
+            FadeOut(d1, d2, d3),
+            FadeOut(tex1_eq, tex2_eq, tex3_eq),
+            FadeOut(q1, q2, q3),
+            FadeOut(commentary1)
+        )
+        self.wait(2)
 
     def draw_vector(self, word_x: Mobject, seed: int, word_text: str, tex_text: str) -> Tuple[Mobject, Mobject]:
         start_pos = word_x.get_center()
@@ -209,7 +247,8 @@ class Word2Vec(Scene):
 
         self.play(Transform(word_origin, word))
         self.play(Write(equal))
-        self.play(Create(rect), FadeIn(value_group))
+        self.play(Create(rect))
+        self.play(FadeIn(value_group))
         self.wait(0.4)
 
         ax_rect = Rectangle(
