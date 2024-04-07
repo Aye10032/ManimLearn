@@ -110,16 +110,16 @@ class Word2Vec(Scene):
         self.play(Transform(sentence_origin, sentence))
         d1, arrow_d1, arrows_d1 = self.draw_position(word1, [word2, word3], r"d^1")
         d1_rect_t = Rectangle(
-            width=0.5, height=2, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=PURPLE
+            width=0.5, height=2, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=TEAL_C
         )
-        d1_tex_t = MathTex(r"d^1", color=PURPLE).next_to(d1_rect_t, DOWN)
+        d1_tex_t = MathTex(r"d^1", color=TEAL_C).next_to(d1_rect_t, DOWN)
         d1_t = VGroup(
             d1_rect_t,
             d1_tex_t
         ).scale(0.8).next_to(a1, RIGHT, buff=2)
         self.wait()
         self.play(
-            Transform(d1, d1_t),
+            TransformMatchingShapes(d1, d1_t),
             FadeOut(arrow_d1, arrows_d1)
         )
 
@@ -127,16 +127,16 @@ class Word2Vec(Scene):
         self.play(Transform(sentence_origin, sentence))
         d2, arrow_d2, arrows_d2 = self.draw_position(word2, [word1, word3], r"d^2")
         d2_rect_t = Rectangle(
-            width=0.5, height=2, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=PURPLE
+            width=0.5, height=2, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=TEAL_C
         )
-        d2_tex_t = MathTex(r"d^2", color=PURPLE).next_to(d2_rect_t, DOWN)
+        d2_tex_t = MathTex(r"d^2", color=TEAL_C).next_to(d2_rect_t, DOWN)
         d2_t = VGroup(
             d2_rect_t,
             d2_tex_t
         ).scale(0.8).next_to(a2, RIGHT, buff=2)
         self.wait()
         self.play(
-            Transform(d2, d2_t),
+            TransformMatchingShapes(d2, d2_t),
             FadeOut(arrow_d2, arrows_d2)
         )
 
@@ -144,16 +144,16 @@ class Word2Vec(Scene):
         self.play(Transform(sentence_origin, sentence))
         d3, arrow_d3, arrows_d3 = self.draw_position(word3, [word1, word2], r"d^3")
         d3_rect_t = Rectangle(
-            width=0.5, height=2, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=PURPLE
+            width=0.5, height=2, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=TEAL_C
         )
-        d3_tex_t = MathTex(r"d^3", color=PURPLE).next_to(d3_rect_t, DOWN)
+        d3_tex_t = MathTex(r"d^3", color=TEAL_C).next_to(d3_rect_t, DOWN)
         d3_t = VGroup(
             d3_rect_t,
             d3_tex_t
         ).scale(0.8).next_to(a3, RIGHT, buff=2)
         self.wait()
         self.play(
-            Transform(d3, d3_t),
+            TransformMatchingShapes(d3, d3_t),
             FadeOut(arrow_d3, arrows_d3)
         )
 
@@ -185,21 +185,21 @@ class Word2Vec(Scene):
         )
 
         q1_rect = Rectangle(
-            width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=BLUE
+            width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=PURPLE_A
         )
-        q1_tex = MathTex(r"x^1", color=BLUE).next_to(q1_rect, DOWN)
+        q1_tex = MathTex(r"x^1", color=PURPLE_A).next_to(q1_rect, DOWN)
         q1 = VGroup(q1_rect, q1_tex).scale(0.8).move_to(LEFT + UP * 2.8)
 
         q2_rect = Rectangle(
-            width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=BLUE
+            width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=PURPLE_A
         )
-        q2_tex = MathTex(r"x^2", color=BLUE).next_to(q2_rect, DOWN)
+        q2_tex = MathTex(r"x^2", color=PURPLE_A).next_to(q2_rect, DOWN)
         q2 = VGroup(q2_rect, q2_tex).scale(0.8).move_to(LEFT)
 
         q3_rect = Rectangle(
-            width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=BLUE
+            width=0.5, height=2.0, grid_xstep=0.5, grid_ystep=0.5, stroke_width=6, color=PURPLE_A
         )
-        q3_tex = MathTex(r"x^3", color=BLUE).next_to(q3_rect, DOWN)
+        q3_tex = MathTex(r"x^3", color=PURPLE_A).next_to(q3_rect, DOWN)
         q3 = VGroup(q3_rect, q3_tex).scale(0.8).move_to(LEFT + DOWN * 2.8)
 
         self.play(
@@ -211,17 +211,20 @@ class Word2Vec(Scene):
 
         commentary1 = MathTex(
             r"&\text{...and here,}\\ &\text{we get the input vector }x^i",
-            tex_to_color_map={r"x^i": BLUE}
+            tex_to_color_map={r"x^i": PURPLE_A}
         ).move_to(RIGHT * 3)
         self.play(Write(commentary1))
+        self.play(
+            FadeOut(a1, a2, a3),
+            FadeOut(tex1_plus, tex2_plus, tex3_plus),
+            # FadeOut(d1, d2, d3),
+            FadeOut(d1_t, d2_t, d3_t),
+            FadeOut(tex1_eq, tex2_eq, tex3_eq),
+        )
 
         self.wait(2)
 
         self.play(
-            FadeOut(a1, a2, a3),
-            FadeOut(tex1_plus, tex2_plus, tex3_plus),
-            FadeOut(d1, d2, d3),
-            FadeOut(tex1_eq, tex2_eq, tex3_eq),
             FadeOut(q1, q2, q3),
             FadeOut(commentary1)
         )
@@ -286,10 +289,10 @@ class Word2Vec(Scene):
         )
 
         d_rec = Rectangle(
-            width=2, height=0.5, grid_xstep=0.5, grid_ystep=1, stroke_width=6, color=PURPLE
+            width=2, height=0.5, grid_xstep=0.5, grid_ystep=1, stroke_width=6, color=TEAL_C
         ).move_to(RIGHT * 2 + DOWN * 1.5)
 
-        d_tex = MathTex(tex_text, color=PURPLE).next_to(d_rec, DOWN)
+        d_tex = MathTex(tex_text, color=TEAL_C).next_to(d_rec, DOWN)
 
         self.play(
             FadeIn(d_rec),
