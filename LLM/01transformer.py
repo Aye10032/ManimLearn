@@ -598,10 +598,12 @@ class AttentionLayer(Scene):
         self.wait(0.5)
 
         commentary2 = MathTex(
-            r"\text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V",
-            # tex_to_color_map={
-            #     r'Q': BLUE,
-            # }
+            r"\text{Attention}(Q,K,V)=\text{softmax}\left({ QK^T \over \sqrt{dim_k} }\right)V",
+            tex_to_color_map={
+                r'Q': BLUE,
+                r'K': GOLD,
+                r'V': GREEN,
+            }
         )
         self.play(Write(commentary2))
         self.wait(2)
@@ -719,3 +721,8 @@ class AttentionLayer(Scene):
         self.play(Write(_tex))
 
         return Group(_rect, _tex)
+
+
+class EncoderAndDecoder(Scene):
+    def construct(self):
+        pass
