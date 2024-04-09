@@ -779,7 +779,10 @@ class DecoderOnly(ThreeDScene):
         self.wait()
 
         self.multi_head()
+        self.play(zoom.animate.set_value(0.6))
         self.wait()
+
+        self.self_attention()
 
     def embedding(self):
         self.play(self.all.animate.shift(UP * 4))
@@ -1143,4 +1146,7 @@ class DecoderOnly(ThreeDScene):
 
         # self.all.remove(self.sentence)
         self.all.add(self.q_group, self.k_group, self.v_group)
-        self.play(self.all.animate.shift(UP * 3))
+        self.play(self.all.animate.shift(UP * 4))
+
+    def self_attention(self):
+        pass
