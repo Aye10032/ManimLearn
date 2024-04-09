@@ -726,6 +726,163 @@ class AttentionLayer(Scene):
         return Group(_rect, _tex)
 
 
-class EncoderAndDecoder(Scene):
+class DecoderOnly(ThreeDScene):
+    def __init__(self, *args, **kwargs):
+        ThreeDScene.__init__(self, *args, **kwargs)
+
+        self.all: Group = Group()
+        self.sentence: Tex = None
+        self.embedding_block: VGroup = None
+        self.embedding_vector: VGroup = None
+        self.position_vector: VGroup = None
+        self.x_matrix: Matrix = None
+
+        self.wq: VGroup = None
+        self.wk: VGroup = None
+        self.wv: VGroup = None
+        self.q_matrix: Matrix = None
+        self.k_matrix: Matrix = None
+        self.v_matrix: Matrix = None
+
     def construct(self):
-        pass
+        self.set_camera_orientation(phi=90 * DEGREES)
+
+        ax = ThreeDAxes()
+        ax_label = ax.get_axis_labels()
+        self.play(
+            Create(ax),
+            Create(ax_label),
+        )
+
+        self.sentence = Tex("Attention ", "is ", "all ", "you ", "need")
+        self.play(Write(self.sentence.rotate(PI / 2, axis=RIGHT)))
+        self.all.add(self.sentence)
+
+        phi, theta, focal_distance, gamma, zoom = self.camera.get_value_trackers()
+        # print(f'phi: {phi.get_value() / DEGREES}, theta: {theta.get_value() / DEGREES}, gamma: {gamma.get_value()}')
+        self.wait()
+        self.play(
+            phi.animate.set_value(75 * DEGREES),
+            theta.animate.set_value(-150 * DEGREES),
+            zoom.animate.set_value(0.8)
+        )
+
+        self.embedding()
+        self.wait()
+
+        self.get_qkv()
+        self.wait()
+
+    def embedding(self):
+        self.play(self.all.animate.shift(UP * 4))
+
+        embedding_prism = Prism(
+            dimensions=(4, 1, 2),
+            fill_color=GRAY,
+            fill_opacity=0.3,
+            stroke_color=GREEN,
+            stroke_width=1,
+            stroke_opacity=1
+        )
+        embedding_tex = Text(
+            "Embedding layer", font_size=30, color=GREEN
+        ).set_shade_in_3d(True).next_to(embedding_prism, LEFT).shift(IN + DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.embedding_block = VGroup(embedding_prism, embedding_tex)
+
+        self.play(FadeIn(self.embedding_block.move_to(ORIGIN)))
+        self.all.add(self.embedding_block)
+
+        self.play(self.all.animate.shift(IN * 1.5))
+
+        self.embedding_vector = VGroup()
+        self.position_vector = VGroup()
+        sum_vector = np.zeros((6, 5))
+        for i in range(5):
+            if i == 0:
+                self.play(self.sentence[i].animate.set_color(BLUE_D))
+            else:
+                self.play(self.sentence[i - 1].animate.set_color(WHITE), self.sentence[i].animate.set_color(BLUE_D))
+
+            np.random.seed(i)
+            values = np.random.random((6, 1)).round(2)
+            sum_vector[:, i] += values[:, 0]
+
+            vector = Matrix(values, bracket_v_buff=SMALL_BUFF).scale(0.7).move_to(
+                embedding_prism.get_center()).rotate(PI / 2, axis=RIGHT)
+
+            np.random.seed(i + 10)
+            position_values = np.random.random((6, 1)).round(2)
+            sum_vector[:, i] += position_values[:, 0]
+            position_vector = self.sentence.copy()
+
+            self.play(self.sentence[i].copy().animate.move_to(embedding_prism.get_center()).fade(1))
+            self.play(vector.animate.shift(3 * DOWN + LEFT * 3 + RIGHT * i * 1.5).fade(0))
+            self.play(
+                Transform(
+                    position_vector,
+                    Matrix(position_values, bracket_v_buff=SMALL_BUFF).scale(0.7).move_to(
+                        embedding_prism.get_center() + LEFT * 3 + OUT * 4 + RIGHT * i * 1.5 + DOWN * 3
+                    ).set_shade_in_3d(True).rotate(PI / 2, axis=RIGHT).fade(0),
+                    run_time=1.5
+                )
+            )
+
+            self.embedding_vector.add(vector)
+            self.position_vector.add(position_vector)
+
+            if i == 4:
+                self.play(self.sentence[i].animate.set_color(WHITE))
+
+        self.all.add(self.embedding_vector, self.position_vector)
+
+        self.play(self.all.animate.shift(UP * 4))
+        sum_vector = sum_vector.round(2)
+        self.x_matrix = Matrix(sum_vector, color=PURPLE_A).move_to(ORIGIN).scale(0.7).rotate(PI / 2, axis=RIGHT)
+
+        self.play(Succession(
+            Transform(
+                VGroup(self.embedding_vector.copy(), self.position_vector.copy()),
+                self.x_matrix,
+                replace_mobject_with_target_in_scene=True
+            ),
+            AnimationGroup(
+                self.position_vector.animate.fade(),
+                self.embedding_vector.animate.fade()
+            )
+        ))
+        self.all.add(self.x_matrix)
+
+    def get_qkv(self):
+        self.play(self.all.animate.shift(UP * 3))
+
+        wq_prism = Prism(
+            dimensions=(3, 1, 3),
+            fill_color=GRAY,
+            fill_opacity=0.3,
+            stroke_color=BLUE,
+            stroke_width=1,
+            stroke_opacity=1
+        )
+        wq_tex = MathTex(
+            r"\boldsymbol{w}^q", font_size=40, color=BLUE
+        ).next_to(wq_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.wq = VGroup(wq_prism, wq_tex)
+
+        wk_prism = wq_prism.copy().set_stroke(color=GOLD).next_to(wq_prism, OUT)
+        wk_tex = MathTex(
+            r"\boldsymbol{w}^k", font_size=40, color=GOLD
+        ).next_to(wk_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.wk = VGroup(wk_prism, wk_tex)
+
+        wv_prism = wq_prism.copy().set_stroke(color=GREEN).next_to(wq_prism, IN)
+        wv_tex = MathTex(
+            r"\boldsymbol{w}^v", font_size=40, color=GREEN
+        ).next_to(wv_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.wq = VGroup(wv_prism, wv_tex)
+
+        self.play(
+            FadeIn(wq_prism, wk_prism, wv_prism),
+            Write(wq_tex),
+            Write(wk_tex),
+            Write(wv_tex)
+        )
