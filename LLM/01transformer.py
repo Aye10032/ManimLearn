@@ -744,6 +744,11 @@ class DecoderOnly(ThreeDScene):
         self.k_matrix: Matrix = None
         self.v_matrix: Matrix = None
 
+        self.liner1: VGroup = None
+        self.q_group: VGroup = None
+        self.k_group: VGroup = None
+        self.v_group: VGroup = None
+
     def construct(self):
         self.set_camera_orientation(phi=90 * DEGREES)
 
@@ -773,6 +778,9 @@ class DecoderOnly(ThreeDScene):
         self.get_qkv()
         self.wait()
 
+        self.multi_head()
+        self.wait()
+
     def embedding(self):
         self.play(self.all.animate.shift(UP * 4))
 
@@ -786,7 +794,7 @@ class DecoderOnly(ThreeDScene):
         )
         embedding_tex = Text(
             "Embedding layer", font_size=30, color=GREEN
-        ).set_shade_in_3d(True).next_to(embedding_prism, LEFT).shift(IN + DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        ).next_to(embedding_prism, LEFT).shift(IN + DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
         self.embedding_block = VGroup(embedding_prism, embedding_tex)
 
         self.play(FadeIn(self.embedding_block.move_to(ORIGIN)))
@@ -837,7 +845,7 @@ class DecoderOnly(ThreeDScene):
 
         self.play(self.all.animate.shift(UP * 4))
         sum_vector = sum_vector.round(2)
-        self.x_matrix = Matrix(sum_vector, color=PURPLE_A).move_to(ORIGIN).scale(0.7).rotate(PI / 2, axis=RIGHT)
+        self.x_matrix = Matrix(sum_vector).set_color(PURPLE_A).move_to(ORIGIN).scale(0.7).rotate(PI / 2, axis=RIGHT)
 
         self.play(Succession(
             Transform(
@@ -852,33 +860,33 @@ class DecoderOnly(ThreeDScene):
         ))
         self.all.add(self.x_matrix)
 
-    def get_qkv(self):
         self.play(self.all.animate.shift(UP * 3))
 
-        wq_prism = Prism(
+    def get_qkv(self):
+        wk_prism = Prism(
             dimensions=(3, 1, 3),
             fill_color=GRAY,
             fill_opacity=0.3,
-            stroke_color=BLUE,
+            stroke_color=GOLD,
             stroke_width=1,
             stroke_opacity=1
         )
-        wq_tex = MathTex(
-            r"\boldsymbol{w}^q", font_size=40, color=BLUE
-        ).next_to(wq_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
-        self.wq = VGroup(wq_prism, wq_tex)
-
-        wk_prism = wq_prism.copy().set_stroke(color=GOLD).next_to(wq_prism, OUT)
         wk_tex = MathTex(
-            r"\boldsymbol{w}^k", font_size=40, color=GOLD
+            r"\boldsymbol{w}^q", font_size=40, color=GOLD
         ).next_to(wk_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
         self.wk = VGroup(wk_prism, wk_tex)
 
-        wv_prism = wq_prism.copy().set_stroke(color=GREEN).next_to(wq_prism, IN)
+        wq_prism = wk_prism.copy().set_stroke(color=BLUE).next_to(wk_prism, OUT)
+        wq_tex = MathTex(
+            r"\boldsymbol{w}^k", font_size=40, color=BLUE
+        ).next_to(wq_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.wq = VGroup(wq_prism, wq_tex)
+
+        wv_prism = wk_prism.copy().set_stroke(color=GREEN).next_to(wk_prism, IN)
         wv_tex = MathTex(
             r"\boldsymbol{w}^v", font_size=40, color=GREEN
         ).next_to(wv_prism, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
-        self.wq = VGroup(wv_prism, wv_tex)
+        self.wv = VGroup(wv_prism, wv_tex)
 
         self.play(
             FadeIn(wq_prism, wk_prism, wv_prism),
@@ -886,3 +894,253 @@ class DecoderOnly(ThreeDScene):
             Write(wk_tex),
             Write(wv_tex)
         )
+        self.all.add(self.wq, self.wk, self.wv)
+
+        self.q_matrix = self.x_matrix.copy()
+        self.k_matrix = self.x_matrix.copy()
+        self.v_matrix = self.x_matrix.copy()
+
+        self.play(
+            self.q_matrix.animate.move_to(wq_prism.get_center()).fade(0.5),
+            self.k_matrix.animate.move_to(wk_prism.get_center()).fade(0.5),
+            self.v_matrix.animate.move_to(wv_prism.get_center()).fade(0.5)
+        )
+
+        np.random.seed(114)
+        value = np.random.random((6, 5)).round(2)
+        new_q = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(BLUE).move_to(self.q_matrix).shift(3 * DOWN).scale(0.7).rotate(PI / 2, axis=RIGHT)
+
+        np.random.seed(514)
+        value = np.random.random((6, 5)).round(2)
+        new_k = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GOLD).move_to(self.k_matrix).shift(3 * DOWN).scale(0.7).rotate(PI / 2, axis=RIGHT)
+
+        np.random.seed(1919)
+        value = np.random.random((6, 5)).round(2)
+        new_v = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GREEN).move_to(self.v_matrix).shift(3 * DOWN).scale(0.7).rotate(PI / 2, axis=RIGHT)
+
+        self.play(
+            Transform(self.q_matrix, new_q),
+            Transform(self.k_matrix, new_k),
+            Transform(self.v_matrix, new_v),
+        )
+
+        q_tex = MathTex(
+            r"\boldsymbol{Q}", font_size=40, color=BLUE
+        ).next_to(self.q_matrix, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        k_tex = MathTex(
+            r"\boldsymbol{K}", font_size=40, color=GOLD
+        ).next_to(self.k_matrix, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        v_tex = MathTex(
+            r"\boldsymbol{V}", font_size=40, color=GREEN
+        ).next_to(self.v_matrix, LEFT, buff=2).shift(DOWN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.play(
+            Write(q_tex, run_time=0.5),
+            Write(k_tex, run_time=0.5),
+            Write(v_tex, run_time=0.5),
+        )
+
+        self.all.add(self.q_matrix, self.k_matrix, self.v_matrix, q_tex, k_tex, v_tex)
+
+    def multi_head(self):
+        self.play(self.all.animate.shift(UP * 6))
+
+        self.liner1 = VGroup()
+
+        mlp1_2 = Prism(
+            dimensions=(1, 2, 5),
+            fill_color=GRAY,
+            fill_opacity=0.3,
+            stroke_color=RED,
+            stroke_width=1,
+            stroke_opacity=1
+        )
+
+        mlp1_1 = mlp1_2.copy().next_to(mlp1_2, LEFT, buff=1.5)
+        mlp1_3 = mlp1_2.copy().next_to(mlp1_2, RIGHT, buff=1.5)
+        self.play(FadeIn(mlp1_1, mlp1_2, mlp1_3))
+        self.liner1.add(mlp1_1, mlp1_2, mlp1_3)
+        self.all.add(self.liner1)
+
+        self.q_group = VGroup()
+        q_1 = self.q_matrix.copy()
+        q_2 = self.q_matrix.copy()
+        q_3 = self.q_matrix.copy()
+
+        self.play(
+            q_1.animate.move_to(mlp1_1).rotate(PI / 2, axis=IN).fade(0.8),
+            q_2.animate.move_to(mlp1_2).rotate(PI / 2, axis=IN).fade(0.8),
+            q_3.animate.move_to(mlp1_3).rotate(PI / 2, axis=IN).fade(0.8),
+        )
+
+        np.random.seed(111)
+        value = np.random.random((6, 5)).round(2)
+        q_1_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(BLUE).move_to(
+            mlp1_1
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + OUT * 3.25).scale(0.7)
+
+        np.random.seed(112)
+        value = np.random.random((6, 5)).round(2)
+        q_2_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(BLUE).move_to(
+            mlp1_2
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + OUT * 3.25).scale(0.7)
+
+        np.random.seed(113)
+        value = np.random.random((6, 5)).round(2)
+        q_3_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(BLUE).move_to(
+            mlp1_3
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + OUT * 3.25).scale(0.7)
+
+        self.play(
+            Transform(q_1, q_1_new),
+            Transform(q_2, q_2_new.fade(0.5)),
+            Transform(q_3, q_3_new.fade(0.6)),
+        )
+        self.q_group.add(q_1, q_2, q_3)
+
+        self.k_group = VGroup()
+        k_1 = self.k_matrix.copy()
+        k_2 = self.k_matrix.copy()
+        k_3 = self.k_matrix.copy()
+
+        self.play(
+            k_1.animate.move_to(mlp1_1).rotate(PI / 2, axis=IN).fade(0.8),
+            k_2.animate.move_to(mlp1_2).rotate(PI / 2, axis=IN).fade(0.8),
+            k_3.animate.move_to(mlp1_3).rotate(PI / 2, axis=IN).fade(0.8),
+        )
+
+        np.random.seed(121)
+        value = np.random.random((6, 5)).round(2)
+        k_1_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GOLD).move_to(
+            mlp1_1
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4).scale(0.7)
+
+        np.random.seed(122)
+        value = np.random.random((6, 5)).round(2)
+        k_2_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GOLD).move_to(
+            mlp1_2
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4).scale(0.7)
+
+        np.random.seed(123)
+        value = np.random.random((6, 5)).round(2)
+        k_3_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GOLD).move_to(
+            mlp1_3
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4).scale(0.7)
+
+        self.play(
+            Transform(k_1, k_1_new),
+            Transform(k_2, k_2_new.fade(0.5)),
+            Transform(k_3, k_3_new.fade(0.6)),
+        )
+        self.k_group.add(k_1, k_2, k_3)
+
+        self.v_group = VGroup()
+        v_1 = self.v_matrix.copy()
+        v_2 = self.v_matrix.copy()
+        v_3 = self.v_matrix.copy()
+
+        self.play(
+            v_1.animate.move_to(mlp1_1).rotate(PI / 2, axis=IN).fade(0.8),
+            v_2.animate.move_to(mlp1_2).rotate(PI / 2, axis=IN).fade(0.8),
+            v_3.animate.move_to(mlp1_3).rotate(PI / 2, axis=IN).fade(0.8),
+        )
+
+        np.random.seed(131)
+        value = np.random.random((6, 5)).round(2)
+        v_1_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GREEN).move_to(
+            mlp1_1
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + IN * 3.25).scale(0.7)
+
+        np.random.seed(132)
+        value = np.random.random((6, 5)).round(2)
+        v_2_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GREEN).move_to(
+            mlp1_2
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + IN * 3.25).scale(0.7)
+
+        np.random.seed(133)
+        value = np.random.random((6, 5)).round(2)
+        v_3_new = Matrix(
+            value,
+            v_buff=0.6,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(GREEN).move_to(
+            mlp1_3
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + IN * 3.25).scale(0.7)
+
+        self.play(
+            Transform(v_1, v_1_new),
+            Transform(v_2, v_2_new.fade(0.5)),
+            Transform(v_3, v_3_new.fade(0.6)),
+        )
+        self.v_group.add(v_1, v_2, v_3)
+
+        # self.all.remove(self.sentence)
+        self.all.add(self.q_group, self.k_group, self.v_group)
+        self.play(self.all.animate.shift(UP * 3))
