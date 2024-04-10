@@ -1,3 +1,4 @@
+import math
 from typing import Tuple
 
 import numpy as np
@@ -726,6 +727,11 @@ class AttentionLayer(Scene):
         return Group(_rect, _tex)
 
 
+def sigmoid(x):
+    s = 1 / (1 + np.exp(-x))
+    return s
+
+
 class DecoderOnly(ThreeDScene):
     def __init__(self, *args, **kwargs):
         ThreeDScene.__init__(self, *args, **kwargs)
@@ -749,15 +755,17 @@ class DecoderOnly(ThreeDScene):
         self.k_group: VGroup = None
         self.v_group: VGroup = None
 
+        self.scale_block: VGroup = None
+
     def construct(self):
         self.set_camera_orientation(phi=90 * DEGREES)
 
-        ax = ThreeDAxes()
-        ax_label = ax.get_axis_labels()
-        self.play(
-            Create(ax),
-            Create(ax_label),
-        )
+        # ax = ThreeDAxes()
+        # ax_label = ax.get_axis_labels()
+        # self.play(
+        #     Create(ax),
+        #     Create(ax_label),
+        # )
 
         self.sentence = Tex("Attention ", "is ", "all ", "you ", "need")
         self.play(Write(self.sentence.rotate(PI / 2, axis=RIGHT)))
@@ -783,6 +791,9 @@ class DecoderOnly(ThreeDScene):
         self.wait()
 
         self.self_attention()
+        self.wait()
+
+        # self.interactive_embed()
 
     def embedding(self):
         self.play(self.all.animate.shift(UP * 4))
@@ -815,14 +826,14 @@ class DecoderOnly(ThreeDScene):
                 self.play(self.sentence[i - 1].animate.set_color(WHITE), self.sentence[i].animate.set_color(BLUE_D))
 
             np.random.seed(i)
-            values = np.random.random((6, 1)).round(2)
+            values = np.random.uniform(0, 9, (6, 1)).round(2)
             sum_vector[:, i] += values[:, 0]
 
             vector = Matrix(values, bracket_v_buff=SMALL_BUFF).scale(0.7).move_to(
                 embedding_prism.get_center()).rotate(PI / 2, axis=RIGHT)
 
             np.random.seed(i + 10)
-            position_values = np.random.random((6, 1)).round(2)
+            position_values = np.random.uniform(0, 9, (6, 1)).round(2)
             sum_vector[:, i] += position_values[:, 0]
             position_vector = self.sentence.copy()
 
@@ -833,7 +844,7 @@ class DecoderOnly(ThreeDScene):
                     position_vector,
                     Matrix(position_values, bracket_v_buff=SMALL_BUFF).scale(0.7).move_to(
                         embedding_prism.get_center() + LEFT * 3 + OUT * 4 + RIGHT * i * 1.5 + DOWN * 3
-                    ).set_shade_in_3d(True).rotate(PI / 2, axis=RIGHT).fade(0),
+                    ).rotate(PI / 2, axis=RIGHT).fade(0),
                     run_time=1.5
                 )
             )
@@ -910,7 +921,7 @@ class DecoderOnly(ThreeDScene):
         )
 
         np.random.seed(114)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         new_q = Matrix(
             value,
             v_buff=0.6,
@@ -920,7 +931,7 @@ class DecoderOnly(ThreeDScene):
         ).set_color(BLUE).move_to(self.q_matrix).shift(3 * DOWN).scale(0.7).rotate(PI / 2, axis=RIGHT)
 
         np.random.seed(514)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         new_k = Matrix(
             value,
             v_buff=0.6,
@@ -930,7 +941,7 @@ class DecoderOnly(ThreeDScene):
         ).set_color(GOLD).move_to(self.k_matrix).shift(3 * DOWN).scale(0.7).rotate(PI / 2, axis=RIGHT)
 
         np.random.seed(1919)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         new_v = Matrix(
             value,
             v_buff=0.6,
@@ -994,7 +1005,7 @@ class DecoderOnly(ThreeDScene):
         )
 
         np.random.seed(111)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         q_1_new = Matrix(
             value,
             v_buff=0.6,
@@ -1006,7 +1017,7 @@ class DecoderOnly(ThreeDScene):
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + OUT * 3.25).scale(0.7)
 
         np.random.seed(112)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         q_2_new = Matrix(
             value,
             v_buff=0.6,
@@ -1018,7 +1029,7 @@ class DecoderOnly(ThreeDScene):
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + OUT * 3.25).scale(0.7)
 
         np.random.seed(113)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         q_3_new = Matrix(
             value,
             v_buff=0.6,
@@ -1048,7 +1059,7 @@ class DecoderOnly(ThreeDScene):
         )
 
         np.random.seed(121)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         k_1_new = Matrix(
             value,
             v_buff=0.6,
@@ -1060,7 +1071,7 @@ class DecoderOnly(ThreeDScene):
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4).scale(0.7)
 
         np.random.seed(122)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         k_2_new = Matrix(
             value,
             v_buff=0.6,
@@ -1072,7 +1083,7 @@ class DecoderOnly(ThreeDScene):
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4).scale(0.7)
 
         np.random.seed(123)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         k_3_new = Matrix(
             value,
             v_buff=0.6,
@@ -1102,7 +1113,7 @@ class DecoderOnly(ThreeDScene):
         )
 
         np.random.seed(131)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         v_1_new = Matrix(
             value,
             v_buff=0.6,
@@ -1114,7 +1125,7 @@ class DecoderOnly(ThreeDScene):
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + IN * 3.25).scale(0.7)
 
         np.random.seed(132)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         v_2_new = Matrix(
             value,
             v_buff=0.6,
@@ -1126,7 +1137,7 @@ class DecoderOnly(ThreeDScene):
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4 + IN * 3.25).scale(0.7)
 
         np.random.seed(133)
-        value = np.random.random((6, 5)).round(2)
+        value = np.random.uniform(0, 9, (6, 5)).round(2)
         v_3_new = Matrix(
             value,
             v_buff=0.6,
@@ -1149,4 +1160,107 @@ class DecoderOnly(ThreeDScene):
         self.play(self.all.animate.shift(UP * 4))
 
     def self_attention(self):
-        pass
+        np.random.seed(111)
+        q_1 = np.random.uniform(0, 9, (6, 5))
+        np.random.seed(121)
+        k_1 = np.random.uniform(0, 9, (6, 5))
+        a_1_value: np.ndarray = np.matmul(q_1.T, k_1).round(2)
+
+        a_1 = Matrix(
+            a_1_value,
+            v_buff=0.8,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(WHITE).move_to(
+            self.q_group[0]
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4.8 + IN * 1.5).scale(0.7)
+
+        np.random.seed(112)
+        q_2 = np.random.uniform(0, 9, (6, 5))
+        np.random.seed(122)
+        k_2 = np.random.uniform(0, 9, (6, 5))
+        a_2_value: np.ndarray = np.matmul(q_2.T, k_2).round(2)
+
+        a_2 = Matrix(
+            a_2_value,
+            v_buff=0.8,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(WHITE).move_to(
+            self.q_group[1]
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4.8 + IN * 1.5).scale(0.7)
+
+        np.random.seed(131)
+        q_3 = np.random.uniform(0, 9, (6, 5))
+        np.random.seed(131)
+        k_3 = np.random.uniform(0, 9, (6, 5))
+        a_3_value: np.ndarray = np.matmul(q_3.T, k_3).round(2)
+
+        a_3 = Matrix(
+            a_3_value,
+            v_buff=0.8,
+            h_buff=1.2,
+            bracket_v_buff=SMALL_BUFF,
+            bracket_h_buff=SMALL_BUFF
+        ).set_color(WHITE).move_to(
+            self.q_group[2]
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).shift(DOWN * 4.8 + IN * 1.5).scale(0.7)
+
+        self.play(
+            Transform(
+                VGroup(self.q_group.copy(), self.k_group.copy()),
+                VGroup(a_1, a_2.fade(0.5), a_3.fade(0.6)),
+                replace_mobject_with_target_in_scene=True
+            )
+        )
+
+        self.all.add(a_1, a_2, a_3)
+        self.play(self.all.animate.shift(UP * 4))
+
+        scale_prism = Prism(
+            dimensions=(6, 0.5, 3),
+            fill_color=YELLOW_A,
+            fill_opacity=0.3,
+            stroke_color=YELLOW,
+            stroke_width=1,
+            stroke_opacity=1
+        ).next_to(a_2, DOWN, buff=0.8)
+        scale_tex = Text(
+            "Scale", font_size=30, color=YELLOW
+        ).next_to(scale_prism, LEFT, buff=2.5).shift(DOWN + IN).rotate(PI / 2, RIGHT).rotate(PI / 2, IN)
+        self.scale_block = VGroup(scale_prism, scale_tex)
+
+        self.play(FadeIn(self.scale_block))
+
+        a_1_new = Matrix(
+            (a_1_value / math.sqrt(6)).round(2),
+            # v_buff=0.8,
+            # h_buff=1.2,
+            # bracket_v_buff=SMALL_BUFF,
+            # bracket_h_buff=SMALL_BUFF
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE).move_to(a_1).shift(DOWN * 4)
+        a_2_new = Matrix(
+            (a_2_value / math.sqrt(6)).round(2),
+            # v_buff=0.8,
+            # h_buff=1.2,
+            # bracket_v_buff=SMALL_BUFF,
+            # bracket_h_buff=SMALL_BUFF
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE).move_to(a_2).shift(DOWN * 4)
+        a_3_new = Matrix(
+            (a_3_value / math.sqrt(6)).round(2),
+            # v_buff=0.8,
+            # h_buff=1.2,
+            # bracket_v_buff=SMALL_BUFF,
+            # bracket_h_buff=SMALL_BUFF
+        ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE).move_to(a_3).shift(DOWN * 4)
+
+        self.play(
+            Transform(a_1, a_1_new.scale(0.7)),
+            Transform(a_2, a_2_new.fade(0.5).scale(0.7)),
+            Transform(a_3, a_3_new.fade(0.5).scale(0.7)),
+            self.scale_block.animate.shift(UP * 3.5)
+        )
+
+
