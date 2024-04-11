@@ -1606,7 +1606,7 @@ class DecoderOnly(ThreeDScene):
         y_value = np.random.random((6, 5)).round(2)
         self.y_matrix = Matrix(
             y_value,
-        ).set_color(PURPLE_E).next_to(self.liner2, DOWN, buff=SMALL_BUFF).rotate(PI / 2, axis=RIGHT)
+        ).set_color(PURPLE_A).next_to(self.liner2, DOWN, buff=SMALL_BUFF).rotate(PI / 2, axis=RIGHT)
 
         self.all.remove(a_out_matrix)
         self.play(
