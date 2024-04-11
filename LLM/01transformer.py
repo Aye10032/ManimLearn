@@ -759,6 +759,7 @@ class DecoderOnly(ThreeDScene):
         self.scale_block: VGroup = None
         self.sigmoid_block: VGroup = None
         self.liner2: Prism = None
+        self.y_matrix: Matrix = None
 
     def construct(self):
         title = Title("Step3. Multi head masked attention", color=YELLOW)
@@ -768,12 +769,14 @@ class DecoderOnly(ThreeDScene):
 
         self.set_camera_orientation(phi=90 * DEGREES)
 
-        # ax = ThreeDAxes()
-        # ax_label = ax.get_axis_labels()
-        # self.play(
-        #     Create(ax),
-        #     Create(ax_label),
-        # )
+        commentary1 = Text(
+            "Let's take a complete look at the attention calculation process",
+            color=YELLOW,
+            font_size=29
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(UL)
+        self.play(Write(commentary1))
 
         self.sentence = Tex("Attention ", "is ", "all ", "you ", "need")
         self.play(Write(self.sentence.rotate(PI / 2, axis=RIGHT)))
@@ -788,24 +791,122 @@ class DecoderOnly(ThreeDScene):
             zoom.animate.set_value(0.8)
         )
 
+        self.play(FadeOut(commentary1))
+
+        commentary1 = MathTex(
+            r"""&\text{First we compute the word embedding and positional encoding}\\
+         &\text{of the text to get its vector representation}""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(UL)
+        self.play(Write(commentary1))
+        self.wait()
+        self.play(FadeOut(commentary1))
+
         self.embedding()
         self.wait()
 
+        commentary1 = MathTex(
+            r"""\text{Then, we compute the matrix }Q,K,V\\ 
+            \text{by three weights }\boldsymbol{w}^q,\boldsymbol{w}^k,\boldsymbol{w}^v""",
+            tex_to_color_map={
+                r'\boldsymbol{w}^q': BLUE,
+                r'\boldsymbol{w}^k': GOLD,
+                r'\boldsymbol{w}^v': GREEN,
+                r'Q': BLUE,
+                r'K': GOLD,
+                r'V': GREEN,
+            },
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_edge(RIGHT)
+        self.play(Write(commentary1))
+        self.wait()
+        self.play(FadeOut(commentary1))
+
         self.get_qkv()
         self.wait()
+
+        commentary1 = MathTex(
+            r"""\text{Here, we use }n\text{ different MLP to }\\
+            \text{extract various features as inputs}\\
+            \text{for multi-head attention.}""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_edge(RIGHT)
+        self.play(Write(commentary1))
+        self.wait()
+        self.play(FadeOut(commentary1))
 
         self.multi_head()
         self.play(zoom.animate.set_value(0.6))
         self.wait()
 
+        commentary1 = MathTex(
+            r"""\text{For each set of }Q,K,V\\ 
+            \text{the calculations we perform are}\\
+            \text{the same as before.}""",
+            tex_to_color_map={
+                r'Q': BLUE,
+                r'K': GOLD,
+                r'V': GREEN,
+            },
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_edge(RIGHT)
+        self.play(Write(commentary1))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1))
+        commentary1 = MathTex(
+            r"""\text{First, we calculate dot product}\\ 
+            \text{between }Q \text{and the transpose of }K""",
+            tex_to_color_map={
+                r'Q': BLUE,
+                r'K': GOLD,
+            },
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_edge(RIGHT)
+        self.play(Write(commentary1))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1))
+
         self.self_attention()
         self.wait()
 
         self.play(
-            self.all.animate.shift(UP * 4),
-            theta.animate.set_value(-120 * DEGREES),
-            zoom.animate.set_value(0.6)
+            self.all.animate.shift(UP * 5),
+            theta.animate.set_value(-115 * DEGREES),
+            zoom.animate.set_value(0.6),
+            run_time=2
         )
+
+        commentary1 = MathTex(
+            r"""\text{This is the process of multi-head attention calculation.}""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(DL)
+        self.play(Write(commentary1))
+        self.wait()
+        self.all.remove(self.sentence, self.y_matrix)
+        self.play(FadeOut(self.all))
+        self.play(FadeOut(commentary1))
+        self.wait(0.5)
+        self.play(FadeOut(self.sentence))
+        self.play(FadeOut(self.y_matrix))
+        self.wait(2)
 
     def embedding(self):
         self.play(self.all.animate.shift(UP * 3))
@@ -890,7 +991,7 @@ class DecoderOnly(ThreeDScene):
 
     def get_qkv(self):
         wk_prism = Prism(
-            dimensions=(3, 1, 3),
+            dimensions=(3, 0.5, 3),
             fill_color=GRAY,
             fill_opacity=0.3,
             stroke_color=GOLD,
@@ -985,13 +1086,13 @@ class DecoderOnly(ThreeDScene):
 
         self.all.add(self.q_matrix, self.k_matrix, self.v_matrix, q_tex, k_tex, v_tex)
 
-    def multi_head(self):
         self.play(self.all.animate.shift(UP * 6))
 
+    def multi_head(self):
         self.liner1 = VGroup()
 
         mlp1_2 = Prism(
-            dimensions=(1, 2, 5),
+            dimensions=(0.5, 2, 5),
             fill_color=GRAY,
             fill_opacity=0.3,
             stroke_color=RED,
@@ -1312,7 +1413,19 @@ class DecoderOnly(ThreeDScene):
             FadeIn(mask_matrix.next_to(a_2, DOWN).scale(0.7)),
             Write(text.next_to(mask_matrix, IN))
         )
-        self.wait(0.5)
+
+        commentary1 = MathTex(
+            r"""\text{Here, we use a mask matrix}\\ 
+            \text{to implement masking}\\
+            \text{of the subsequent words.}""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(UR)
+        self.play(Write(commentary1))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1))
         self.play(Unwrite(text))
 
         a_1_value = a_1_value + mask
@@ -1357,6 +1470,18 @@ class DecoderOnly(ThreeDScene):
 
         self.play(FadeIn(self.sigmoid_block))
         self.all.add(self.sigmoid_block)
+
+        commentary1 = MathTex(
+            r"""\text{The masked matrix passed through a sigmoid function}\\ 
+            \text{and the values of the masked parts turned into }0""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(DR)
+        self.play(Write(commentary1))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1))
 
         a_1_value = sigmoid(a_1_value)
         a_2_value = sigmoid(a_2_value)
@@ -1403,6 +1528,40 @@ class DecoderOnly(ThreeDScene):
             ),
         )
 
+        commentary1 = MathTex(
+            r"""\text{The above process is the calculation of masked-attention:}""",
+            color=YELLOW,
+            font_size=30
+        )
+        commentary2 = MathTex(
+            r"""\text{Attention}(Q,K,V)=\text{softmax}\left({ QK^T \over \sqrt{dim_k} }+\mathbf{A}_{mask}\right)V""",
+            tex_to_color_map={
+                r'Q': BLUE,
+                r'K': GOLD,
+                r'V': GREEN,
+            },
+            color=WHITE,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1, commentary2)
+        commentary2.to_corner(DR)
+        commentary1.next_to(commentary2, UP)
+        self.play(Write(commentary1))
+        self.play(Write(commentary2))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1, commentary2))
+        commentary1 = MathTex(
+            r"""\text{Finally, we concatenate the outputs from different heads}\\ 
+            \text{and transform them to the same dimension as the beginning through a MLP}""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(DR)
+        self.play(Write(commentary1))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1))
+
         a_out = np.concatenate((a_1_value, a_2_value, a_3_value), axis=0)
         a_out_matrix = Matrix(
             a_out,
@@ -1431,7 +1590,7 @@ class DecoderOnly(ThreeDScene):
         print(a_out_matrix.get_center())
 
         self.liner2 = Prism(
-            dimensions=(4, 0.5, 3),
+            dimensions=(5, 0.5, 4),
             fill_color=GRAY,
             fill_opacity=0.3,
             stroke_color=PURPLE,
@@ -1439,21 +1598,22 @@ class DecoderOnly(ThreeDScene):
             stroke_opacity=1
         ).next_to(a_out_matrix, DOWN, buff=1)
 
-        self.play(
-            FadeIn(self.liner2),
-            self.all.animate.shift(UP * 2)
-        )
+        self.play(FadeIn(self.liner2))
+
+        self.all.add(self.liner2)
+        self.play(self.all.animate.shift(UP * 2))
 
         y_value = np.random.random((6, 5)).round(2)
-        y_matrix = Matrix(
+        self.y_matrix = Matrix(
             y_value,
-        ).set_color(PURPLE).next_to(self.liner2, DOWN, buff=0.6).rotate(PI / 2, axis=RIGHT)
+        ).set_color(PURPLE_E).next_to(self.liner2, DOWN, buff=SMALL_BUFF).rotate(PI / 2, axis=RIGHT)
 
         self.all.remove(a_out_matrix)
         self.play(
             Transform(
                 a_out_matrix,
-                y_matrix,
+                self.y_matrix,
                 replace_mobject_with_target_in_scene=True
             )
         )
+        self.all.add(self.y_matrix)
