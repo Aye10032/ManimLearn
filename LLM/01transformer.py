@@ -836,6 +836,9 @@ class DecoderOnly(ThreeDScene):
             \text{extract various features as inputs}\\
             \text{for multi-head attention.}""",
             color=YELLOW,
+            tex_to_color_map={
+                "multi-head attention": WHITE
+            },
             font_size=30
         )
         self.add_fixed_in_frame_mobjects(commentary1)
@@ -867,7 +870,7 @@ class DecoderOnly(ThreeDScene):
         self.play(FadeOut(commentary1))
         commentary1 = MathTex(
             r"""\text{First, we calculate dot product}\\ 
-            \text{between }Q \text{and the transpose of }K""",
+            \text{between }Q \text{ and the transpose of }K""",
             tex_to_color_map={
                 r'Q': BLUE,
                 r'K': GOLD,
@@ -900,11 +903,14 @@ class DecoderOnly(ThreeDScene):
         commentary1.to_corner(DL)
         self.play(Write(commentary1))
         self.wait()
-        self.all.remove(self.sentence, self.y_matrix)
-        self.play(FadeOut(self.all))
+        self.all.remove(self.y_matrix)
+
+        self.play(
+            FadeOut(self.all),
+            theta.animate.set_value(-90 * DEGREES),
+        )
         self.play(FadeOut(commentary1))
         self.wait(0.5)
-        self.play(FadeOut(self.sentence))
         self.play(FadeOut(self.y_matrix))
         self.wait(2)
 
@@ -1276,26 +1282,14 @@ class DecoderOnly(ThreeDScene):
         def update_matrix(values: List[np.ndarray], shift: List[Vector3]) -> Tuple[Matrix, Matrix, Matrix]:
             _a_1_new = Matrix(
                 values[0],
-                # v_buff=0.8,
-                # h_buff=1.2,
-                # bracket_v_buff=SMALL_BUFF,
-                # bracket_h_buff=SMALL_BUFF
             ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE).move_to(a_1).shift(shift[0])
 
             _a_2_new = Matrix(
                 values[1],
-                # v_buff=0.8,
-                # h_buff=1.2,
-                # bracket_v_buff=SMALL_BUFF,
-                # bracket_h_buff=SMALL_BUFF
             ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE).move_to(a_2).shift(shift[1])
 
             _a_3_new = Matrix(
                 values[2],
-                # v_buff=0.8,
-                # h_buff=1.2,
-                # bracket_v_buff=SMALL_BUFF,
-                # bracket_h_buff=SMALL_BUFF
             ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE).move_to(a_3).shift(shift[2])
 
             return _a_1_new, _a_2_new, _a_3_new
@@ -1359,6 +1353,18 @@ class DecoderOnly(ThreeDScene):
         self.all.add(a_1, a_2, a_3)
         self.play(self.all.animate.shift(UP * 4))
 
+        commentary1 = MathTex(
+            r"""\text{First, we use }\sqrt{dim_k}\\ 
+            \text{to scale the result of dot product}""",
+            color=YELLOW,
+            font_size=30
+        )
+        self.add_fixed_in_frame_mobjects(commentary1)
+        commentary1.to_corner(DR)
+        self.play(Write(commentary1))
+        self.wait(0.8)
+        self.play(FadeOut(commentary1))
+
         scale_prism = Prism(
             dimensions=(6, 0.5, 3),
             fill_color=YELLOW_A,
@@ -1398,7 +1404,6 @@ class DecoderOnly(ThreeDScene):
         self.play(self.all.animate.shift(UP * 3.5))
 
         a1_pos, a2_pos, a3_pos = a_1.get_center(), a_2.get_center(), a_3.get_center()
-        print(a1_pos, a2_pos, a3_pos)
         self.play(a_2.animate.shift(1.75 * IN).fade(-1))
         self.play(
             a_1.animate.next_to(a_2, OUT),
@@ -1543,12 +1548,13 @@ class DecoderOnly(ThreeDScene):
             color=WHITE,
             font_size=30
         )
-        self.add_fixed_in_frame_mobjects(commentary1, commentary2)
+        self.add_fixed_in_frame_mobjects(commentary1)
         commentary2.to_corner(DR)
         commentary1.next_to(commentary2, UP)
         self.play(Write(commentary1))
+        self.add_fixed_in_frame_mobjects(commentary2)
         self.play(Write(commentary2))
-        self.wait(0.8)
+        self.wait(2)
         self.play(FadeOut(commentary1, commentary2))
         commentary1 = MathTex(
             r"""\text{Finally, we concatenate the outputs from different heads}\\ 
@@ -1565,10 +1571,6 @@ class DecoderOnly(ThreeDScene):
         a_out = np.concatenate((a_1_value, a_2_value, a_3_value), axis=0)
         a_out_matrix = Matrix(
             a_out,
-            # v_buff=0.8,
-            # h_buff=1.2,
-            # bracket_v_buff=SMALL_BUFF,
-            # bracket_h_buff=SMALL_BUFF
         ).rotate(PI / 2, axis=IN).rotate(PI / 2, axis=DOWN).set_color(WHITE)
 
         self.all.remove(a_group)
@@ -1587,7 +1589,6 @@ class DecoderOnly(ThreeDScene):
         self.play(Indicate(a_out_matrix.get_rows()[:6]))
         self.play(Indicate(a_out_matrix.get_rows()[6:12]))
         self.play(Indicate(a_out_matrix.get_rows()[12:]))
-        print(a_out_matrix.get_center())
 
         self.liner2 = Prism(
             dimensions=(5, 0.5, 4),
@@ -1606,14 +1607,15 @@ class DecoderOnly(ThreeDScene):
         y_value = np.random.random((6, 5)).round(2)
         self.y_matrix = Matrix(
             y_value,
-        ).set_color(PURPLE_A).next_to(self.liner2, DOWN, buff=SMALL_BUFF).rotate(PI / 2, axis=RIGHT)
+        ).set_color(PURPLE_A).move_to(self.liner2).rotate(PI / 2, axis=RIGHT)
 
         self.all.remove(a_out_matrix)
         self.play(
             Transform(
                 a_out_matrix,
-                self.y_matrix,
+                self.y_matrix.scale(0.5).fade(0.5),
                 replace_mobject_with_target_in_scene=True
             )
         )
+        self.play(self.y_matrix.animate.shift(DOWN).scale(2).fade(-1))
         self.all.add(self.y_matrix)
