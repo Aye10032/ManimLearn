@@ -158,8 +158,10 @@ class ThreeDCameraIllusionRotation(ThreeDScene):
 
 class ThreeDSurfacePlot(ThreeDScene):
     def construct(self):
-        resolution_fa = 30
         self.set_camera_orientation(phi=75 * DEGREES, theta=-30 * DEGREES)
+
+        ax = ThreeDAxes()
+        self.play(Write(ax))
 
         mu = [0.0, 0.0]
         sigma = ValueTracker(0.4)
@@ -173,6 +175,8 @@ class ThreeDSurfacePlot(ThreeDScene):
             z = np.exp(-(d ** 2 / (2.0 * sigma_val ** 2)))
 
             return np.array([x, y, z])
+
+        resolution_fa = 30
 
         def gauss():
             gauss_surface = Surface(
@@ -188,8 +192,6 @@ class ThreeDSurfacePlot(ThreeDScene):
 
             return gauss_surface
 
-        ax = ThreeDAxes()
-        self.play(Write(ax))
         init_surface = gauss()
         self.play(Write(init_surface))
         self.remove(init_surface)

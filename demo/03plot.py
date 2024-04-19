@@ -119,15 +119,15 @@ class PolygonOnAxes(Scene):
             tips=True
         )
 
-        t = ValueTracker(5)
         k = 25
-
         graph = ax.plot(
             lambda x: k / x,
             color=YELLOW_D,
             x_range=[k / 10, 10.0, 0.01],
             use_smoothing=False
         )
+
+        t = ValueTracker(5)
 
         def get_rectangle() -> VMobject:
             _polygon = Polygon(*[
@@ -149,7 +149,6 @@ class PolygonOnAxes(Scene):
 
         dot = Dot()
         dot.add_updater(dot_updater)
-        dot.set_z_index(10)
 
         self.add(ax, graph)
         self.play(FadeIn(dot))
